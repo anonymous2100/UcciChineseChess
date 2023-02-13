@@ -6,13 +6,12 @@ import java.io.FileNotFoundException;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 象棋游戏播放类 <br>
  * 使用的是 sun.audio.* 中的类, 在一些JVM平台可能不受支持
  **/
-@Slf4j
+// @Slf4j
 public enum ChessAudio
 {
 	/**
