@@ -73,7 +73,7 @@ public class UcciEngine
 
 	public static String getBestMove(String fen) throws IOException
 	{
-		// System.out.println(">>>正在向引擎发送命令，等待回复最佳走法中...");
+		System.out.println(">>>正在向引擎发送命令，等待回复最佳走法中...");
 		OutputStream outputStream = UcciEngine.getOutputStream();
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
 		bw.write(fen);
@@ -100,13 +100,13 @@ public class UcciEngine
 			{
 				continue;
 			}
-			//System.out.println("<<<" + bestmove);
+			System.out.println("<<<" + bestmove);
 			Utils.writeToFile(bestmove);
 			if (bestmove.startsWith("bestmove"))
 			{
 				Utils.writeToFile("\n");
 				hasReturn = true;
-				// log.info("<<<引擎已返回最佳着法！");
+				log.info("<<<引擎已返回最佳着法！");
 				return bestmove.substring(9, 13);
 			}
 			else if (bestmove.startsWith("nobestmove") || (System.currentTimeMillis() - requestTime) > 1000 * 60 * 5)

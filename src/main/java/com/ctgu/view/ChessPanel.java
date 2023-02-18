@@ -935,7 +935,7 @@ public class ChessPanel extends JPanel
 			moveFen = "position fen " + controller.toFen(controller.pieceArray) + " - - " + noEatMoves + " " + n + " "
 					+ movesString;
 		}
-		// System.out.println("\n>>>" + moveFen);
+		 System.out.println("\n>>>" + moveFen);
 		String bestMove = null;
 		try
 		{
