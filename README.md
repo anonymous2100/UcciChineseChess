@@ -1,0 +1,2 @@
+# UcciChineseChess
+使用java开发的中国象棋UCCI引擎界面程序
