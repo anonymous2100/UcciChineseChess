@@ -22,7 +22,7 @@ public class ChessController
 	public static String[] iccsHorizontalNumbers = { "a", "b", "c", "d", "e", "f", "g", "h", "i" };
 	// iccs的纵坐标
 	public static String[] iccsVerticalNumbers = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-
+	
 	public String[] directionNumbers = { "进", "退", "平" };
 
 	// 初始棋子pieceArray[10][9]
@@ -189,7 +189,7 @@ public class ChessController
 	 * @param
 	 * @return boolean
 	 */
-	public boolean checkWhetherCanMove(Point startPoint, Point endPoint)
+	public boolean checkWhetherCanMove(String chessValue, Point startPoint, Point endPoint)
 	{
 		int lastX = (int) startPoint.getX();
 		int lastY = (int) startPoint.getY();
@@ -217,7 +217,7 @@ public class ChessController
 				return false;
 			}
 			// 符合规则
-			if (checkRule(startPoint, endPoint))
+			if (checkRule(chessValue, startPoint, endPoint))
 			{
 				return true;
 			}
@@ -243,7 +243,7 @@ public class ChessController
 				return false;
 			}
 			// 符合规则
-			if (checkRule(startPoint, endPoint))
+			if (checkRule(chessValue, startPoint, endPoint))
 			{
 				// Step step = new Step(new ChessPoint(lastPoint), new ChessPoint(currentPoint));
 				// stepList.add(step);
@@ -318,14 +318,14 @@ public class ChessController
 	/**
 	 * 判断能否走棋
 	 */
-	public boolean checkRule(Point lastPoint, Point currentPoint)
+	public boolean checkRule(String chessValue, Point lastPoint, Point currentPoint)
 	{
 		int lastX = (int) lastPoint.getX();
 		int lastY = (int) lastPoint.getY();
 		int currentX = (int) currentPoint.getX();
 		int currentY = (int) currentPoint.getY();
 		// 终点位置的棋子
-		String chessValue = pieceArray[lastY][lastX];
+		// String chessValue = pieceArray[lastY][lastX];
 		String currentPiece = pieceArray[currentY][currentX];
 		// 1、落子位置不能有本方棋子
 		if ((chessValue.startsWith("rr") && currentPiece.startsWith("r"))
@@ -672,7 +672,7 @@ public class ChessController
 		return true;
 	}
 
-	public String getChineseChess(String chessValue)
+	public   String getChineseChess(String chessValue)
 	{
 		// 车
 		if (chessValue.startsWith("rr") || chessValue.startsWith("br"))

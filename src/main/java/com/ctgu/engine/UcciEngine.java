@@ -118,6 +118,28 @@ public class UcciEngine
 		}
 	}
 
+	public static void sendStop()
+	{
+		System.out.println(">>>正在向引擎发送【退出】命令，等待回复中...");
+		try
+		{
+			OutputStream outputStream = UcciEngine.getOutputStream();
+			outputStream.write("quit\r\n".getBytes());
+			outputStream.flush();
+
+			// 取得命令结果的输出流
+			InputStream fis = UcciEngine.getInputStream();
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+			String result = br.readLine();
+			System.out.println("<<<" + result);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	// public static void main(String[] args) throws IOException, Exception
 	// {
 	// while (true)

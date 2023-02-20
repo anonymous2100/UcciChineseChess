@@ -17,7 +17,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -33,10 +35,16 @@ import com.ctgu.model.ChessPoint;
 import com.ctgu.model.Record;
 import com.ctgu.model.Step;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ChessPanel extends JPanel
 {
 	/** serialVersionUID */
 	private static final long serialVersionUID = 6672024539300490002L;
+	public static String[] xIndex = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+	public static String[] yIndex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+	private static List<ChessPoint> blackIndicitorList = new ArrayList<>();
 
 	private boolean useIccs = true;
 	private Image imgBoard;
@@ -187,7 +195,7 @@ public class ChessPanel extends JPanel
 				int x = Math.round(1.0f * (e.getX() - ChessConstant.CHESSBOARD_MARGIN - ChessConstant.X_INIT)
 						/ ChessConstant.GRID_WIDTH);
 				// System.out.println("e.getY()=" + e.getY() + ",e.getX()=" + e.getX() + "，y=" + y + ",x=" + x);
-				// 处理鼠标点击棋盘上交叉点的
+				// 处理鼠标点击棋盘上交叉点的点击事件
 				if ((y >= 0 && y <= 9) && (x >= 0 && x <= 8))
 				{
 					// System.out.println("pieceArray[" + y + "][" + x + "]=" + pieceArray[y][x]);
@@ -215,7 +223,8 @@ public class ChessPanel extends JPanel
 						return;
 					}
 					// 判断当前位置能否落子
-					if (controller.checkWhetherCanMove(controller.lastPoint, controller.currentPoint))
+					if (controller.checkWhetherCanMove(controller.pieceArray[y][x], controller.lastPoint,
+							controller.currentPoint))
 					{
 						// 判断当前走棋是否会被将军
 						boolean isCheckedFlag = isChecked();
@@ -249,7 +258,7 @@ public class ChessPanel extends JPanel
 						// 再把上一个位置的棋子置为空
 						controller.pieceArray[(int) controller.lastPoint.getY()][(int) controller.lastPoint.getX()] = "";
 						controller.moveIndicitorList.clear();
-						// blackIndicitorList.clear();
+						blackIndicitorList.clear();
 						loadPieces();
 						repaint();
 						System.out.println("【红方落子】：lastPoint=(" + (int) controller.lastPoint.getY() + ","
@@ -311,7 +320,7 @@ public class ChessPanel extends JPanel
 	protected boolean isChecked()
 	{
 		ChessPoint redKingPoint = new ChessPoint();
-		// 先找出黑方棋子的位置，
+		// 先找出黑方棋子的位置，若本方的帅在对方棋子的可移动路径上，则表示当前正在被将军
 		for (int y = 0; y < 10; y++)
 		{
 			for (int x = 0; x < 9; x++)
@@ -325,6 +334,42 @@ public class ChessPanel extends JPanel
 				}
 			}
 		}
+		// 遍历黑方各个棋子的可移动路线，取合集，判断是否包含红方帅的位置
+		// List<String> blackList = new ArrayList<>();
+		// List<ChessPoint> allList = new ArrayList<>();
+		// for (int y = 0; y < 10; y++)
+		// {
+		// for (int x = 0; x < 9; x++)
+		// {
+		// String chessValue = controller.pieceArray[y][x];
+		// if (chessValue.startsWith("b"))
+		// {
+		// blackList.add(chessValue);
+		// List<ChessPoint> singleIndicitorList = new ArrayList<>();
+		// for (int yy = 0; yy < 10; yy++)
+		// {
+		// for (int xx = 0; xx < 9; xx++)
+		// {
+		// // log.info("i={},blackList[i]={}，x={},y={}", i, blackList.get(i), x, y);
+		// if (controller.checkWhetherCanMove(chessValue, new Point(x, y), new Point(xx, yy)))
+		// {
+		// singleIndicitorList.add(new ChessPoint(xx, yy));
+		// }
+		// }
+		// }
+		// log.info("【isChecked】chessValue={}, singleIndicitorList={}",
+		// controller.getChineseChess(chessValue), singleIndicitorList);
+		// allList.addAll(singleIndicitorList);
+		// }
+		// }
+		// }
+		// Set<ChessPoint> userSet = new HashSet<>(allList);
+		// blackIndicitorList = new ArrayList<>(userSet);
+		// if (blackIndicitorList.size() > 0
+		// && blackIndicitorList.contains(new ChessPoint(redKingPoint.getX(), redKingPoint.getY())))
+		// {
+		// return true;
+		// }
 		return false;
 	}
 
@@ -335,7 +380,7 @@ public class ChessPanel extends JPanel
 		{
 			for (int x = 0; x < 9; x++)
 			{
-				if (controller.checkWhetherCanMove(new Point(xx, yy), new Point(x, y)))
+				if (controller.checkWhetherCanMove(pieceValue, new Point(xx, yy), new Point(x, y)))
 				{
 					controller.moveIndicitorList.add(new ChessPoint(x, y));
 				}
@@ -466,8 +511,8 @@ public class ChessPanel extends JPanel
 		// 画棋盘刻度线
 		if (isUseIccs())
 		{
-			drawICCSNumbers(g2);
-			// drawICoordinates(g2);
+			// drawICCSNumbers(g2);
+			drawICoordinates(g2);
 		}
 		else
 		{
@@ -666,40 +711,40 @@ public class ChessPanel extends JPanel
 		}
 	}
 
-	// private void drawICoordinates(Graphics2D g2)
-	// {
-	// g2.setColor(Color.BLUE); // 设置画笔颜色
-	// Font font = new Font("黑体", Font.PLAIN, 25);
-	// g2.setFont(font); // 设置字体
-	//
-	// // 绘制上方横坐标
-	// for (int i = 0; i < 9; i++)
-	// {
-	// FontMetrics fm = g2.getFontMetrics(font);
-	// // 字符串绘制宽度
-	// int width = fm.stringWidth(xIndex[i]);
-	// g2.drawString(xIndex[i], ChessConstant.CHESSBOARD_MARGIN + i * ChessConstant.GRID_WIDTH - width / 2,
-	// ChessConstant.CHESSBOARD_MARGIN / 2 + ChessConstant.GRID_WIDTH / 2);
-	// }
-	// // 绘制下方横坐标
-	// for (int i = 0; i < 9; i++)
-	// {
-	// FontMetrics fm = g2.getFontMetrics(font);
-	// // 字符串绘制宽度
-	// int width = fm.stringWidth(xIndex[i]);
-	// g2.drawString(xIndex[i], ChessConstant.CHESSBOARD_MARGIN + i * ChessConstant.GRID_WIDTH - width / 2,
-	// ChessConstant.CHESSBOARD_MARGIN + ChessConstant.GRID_WIDTH * 9 + ChessConstant.GRID_WIDTH);
-	// }
-	// // 绘制竖坐标
-	// for (int i = 0; i <= 9; i++)
-	// {
-	// FontMetrics fm = g2.getFontMetrics(font);
-	// // 字符串绘制宽度
-	// int width = fm.stringWidth(yIndex[i]);
-	// g2.drawString(yIndex[i], ChessConstant.CHESSBOARD_MARGIN / 2, ChessConstant.CHESSBOARD_MARGIN + i *
-	// ChessConstant.GRID_WIDTH + width / 2);
-	// }
-	// }
+	private void drawICoordinates(Graphics2D g2)
+	{
+		g2.setColor(Color.BLUE); // 设置画笔颜色
+		Font font = new Font("黑体", Font.PLAIN, 25);
+		g2.setFont(font); // 设置字体
+
+		// 绘制上方横坐标
+		for (int i = 0; i < 9; i++)
+		{
+			FontMetrics fm = g2.getFontMetrics(font);
+			// 字符串绘制宽度
+			int width = fm.stringWidth(xIndex[i]);
+			g2.drawString(xIndex[i], ChessConstant.CHESSBOARD_MARGIN + i * ChessConstant.GRID_WIDTH - width / 2,
+					ChessConstant.CHESSBOARD_MARGIN / 2 + ChessConstant.GRID_WIDTH / 2);
+		}
+		// 绘制下方横坐标
+		for (int i = 0; i < 9; i++)
+		{
+			FontMetrics fm = g2.getFontMetrics(font);
+			// 字符串绘制宽度
+			int width = fm.stringWidth(xIndex[i]);
+			g2.drawString(xIndex[i], ChessConstant.CHESSBOARD_MARGIN + i * ChessConstant.GRID_WIDTH - width / 2,
+					ChessConstant.CHESSBOARD_MARGIN + ChessConstant.GRID_WIDTH * 9 + ChessConstant.GRID_WIDTH);
+		}
+		// 绘制竖坐标
+		for (int i = 0; i <= 9; i++)
+		{
+			FontMetrics fm = g2.getFontMetrics(font);
+			// 字符串绘制宽度
+			int width = fm.stringWidth(yIndex[i]);
+			g2.drawString(yIndex[i], ChessConstant.CHESSBOARD_MARGIN / 2,
+					ChessConstant.CHESSBOARD_MARGIN + i * ChessConstant.GRID_WIDTH + width / 2);
+		}
+	}
 
 	/**
 	 * 画棋盘刻度线
@@ -935,7 +980,7 @@ public class ChessPanel extends JPanel
 			moveFen = "position fen " + controller.toFen(controller.pieceArray) + " - - " + noEatMoves + " " + n + " "
 					+ movesString;
 		}
-		 System.out.println("\n>>>" + moveFen);
+		System.out.println("\n>>>" + moveFen);
 		String bestMove = null;
 		try
 		{
