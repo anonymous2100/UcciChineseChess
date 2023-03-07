@@ -1,17 +1,20 @@
 package com.ctgu.model;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
-import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.Player;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 象棋游戏播放类 <br>
  * 使用的是 sun.audio.* 中的类, 在一些JVM平台可能不受支持
  **/
-// @Slf4j
+@Slf4j
 public enum ChessAudio
 {
 	/**
@@ -51,66 +54,102 @@ public enum ChessAudio
 	 */
 	BE_CHECKMATED_BY_COM("310"), OPEN_BOARD("311");
 
-	/**
-	 * 标记
-	 */
-	private final String tag;
+	private String tag;
 
-	// /**
-	// * AudioData 对象
-	// */
-	// @SuppressWarnings("java:S3077")
-	// private volatile AudioData audioData;
-	//
-	// @SuppressWarnings("java:S3077")
-	// private static volatile AudioDataStream audioDataStream = null;
-
-	private Player player = null;
+	private static AudioInputStream audioStream;
+	private static AudioFormat audioFormat;
+	private static SourceDataLine sourceDataLine;
 
 	ChessAudio(String tag)
 	{
 		this.tag = tag;
 	}
 
-	/**
-	 * 获取 AudioData 对象, 没有则生成
-	 *
-	 * @return AudioData 对象
-	 */
-	public Player getAudioData()
+	public String getTag()
 	{
-		if (player == null)
-		{
-			final String name = "wave/" + tag + ".wav";
+		return tag;
+	}
 
-			File file = new File(System.getProperty("user.dir") + File.separator + name);
-			try
-			{
-				player = new Player(new FileInputStream(file.getAbsolutePath()));
-			}
-			catch (FileNotFoundException | JavaLayerException e)
-			{
-				e.printStackTrace();
-			}
+	/**
+	 * 根据name查找
+	 */
+	public static String findByName(String name)
+	{
+		String retTag = null;
+		for (ChessAudio chessAudio : ChessAudio.values())
+		{
+			if (name.equals(chessAudio.getTag()))
+				retTag = chessAudio.getTag();
 		}
-		return player;
+		return retTag;
+	}
+
+	public static void play(ChessAudio audioTag)
+	{
+		// 播放音频
+		new Thread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				realPlay(audioTag);
+			}
+		}).start();
 	}
 
 	/**
 	 * 播放音频
 	 */
-	public synchronized void play()
+	public static void realPlay(ChessAudio audioTag)
 	{
-		if (player != null)
+		final String name = "wave/" + findByName(audioTag.getTag()) + ".wav";
+		// log.info("name: " + name);
+		String fileName = ChessAudio.class.getClassLoader()
+				.getResource(name)
+				.getFile();
+		// log.info("fileName: " + fileName);
+		File file = new File(fileName);
+		try
 		{
-			try
+			int count;
+			byte buf[] = new byte[2048];
+			// 获取音频输入流
+			audioStream = AudioSystem.getAudioInputStream(file);
+			// 获取音频格式
+			audioFormat = audioStream.getFormat();
+			log.info("播放音频文件: " + file.getAbsolutePath());
+			// log.info("音频Encoding: " + audioFormat.getEncoding());
+			// 如果不是wav格式，转换mp3文件编码。MPEG1L3（mp3格式）转为PCM_SIGNED（wav格式）
+			if (audioFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED)
 			{
-				player.play();
-			}
-			catch (JavaLayerException e)
+				audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, audioFormat.getSampleRate(), 16,
+						audioFormat.getChannels(), audioFormat.getChannels() * 2, audioFormat.getSampleRate(), false);
+				audioStream = AudioSystem.getAudioInputStream(audioFormat, audioStream);
+			} // 转换mp3文件编码结束
+				 // 封装音频信息
+			DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, audioFormat,
+					AudioSystem.NOT_SPECIFIED);
+			// 获取虚拟扬声器（SourceDataLine）实例
+			sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+			sourceDataLine.open(audioFormat);
+			sourceDataLine.start();
+			while ((count = audioStream.read(buf, 0, buf.length)) != -1)
 			{
-				e.printStackTrace();
+				sourceDataLine.write(buf, 0, count);
 			}
+			// 播放结束，释放资源
+			sourceDataLine.drain();
+			sourceDataLine.close();
+			audioStream.close();
 		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) throws Exception
+	{
+		play(ChessAudio.MAN_EAT);
 	}
 }

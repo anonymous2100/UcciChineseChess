@@ -151,7 +151,7 @@ public class ChessPanel extends JPanel
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("重新开始游戏...");
+				log.info("重新开始游戏...");
 				new MessageFrame("重新开始游戏...");
 				for (int i = 0; i < initPieceArray.length; i++)
 				{
@@ -166,7 +166,7 @@ public class ChessPanel extends JPanel
 				Utils.createLogFile();
 				stepTextArea.setText("");
 				engineTextArea.setText("");
-				ChessAudio.OPEN_BOARD.play();
+				ChessAudio.play(ChessAudio.OPEN_BOARD);
 			}
 		});
 	}
@@ -194,11 +194,11 @@ public class ChessPanel extends JPanel
 						/ ChessConstant.GRID_WIDTH);
 				int x = Math.round(1.0f * (e.getX() - ChessConstant.CHESSBOARD_MARGIN - ChessConstant.X_INIT)
 						/ ChessConstant.GRID_WIDTH);
-				// System.out.println("e.getY()=" + e.getY() + ",e.getX()=" + e.getX() + "，y=" + y + ",x=" + x);
+				// log.info("e.getY()=" + e.getY() + ",e.getX()=" + e.getX() + "，y=" + y + ",x=" + x);
 				// 处理鼠标点击棋盘上交叉点的点击事件
 				if ((y >= 0 && y <= 9) && (x >= 0 && x <= 8))
 				{
-					// System.out.println("pieceArray[" + y + "][" + x + "]=" + pieceArray[y][x]);
+					// log.info("pieceArray[" + y + "][" + x + "]=" + pieceArray[y][x]);
 					// 更新标记，同时每次点击时都要更新当前位置
 					if (controller.pieceArray[y][x].length() > 0)
 					{
@@ -207,18 +207,18 @@ public class ChessPanel extends JPanel
 						repaint();
 					}
 					controller.currentPoint.setLocation(x, y);
-					// System.out.println("controller.lastPoint=(" + (int) controller.lastPoint.getX() + "," + (int)
+					// log.info("controller.lastPoint=(" + (int) controller.lastPoint.getX() + "," + (int)
 					// controller.lastPoint.getY()
 					// + ")" + ", controller.currentPoint=(" + (int) controller.currentPoint.getX() + ","
 					// + (int) controller.currentPoint.getY() + ")");
 					if (controller.hasWinner(controller.pieceArray))
 					{
-						System.out.println("棋局已结束！");
+						log.info("棋局已结束！");
 						return;
 					}
 					if (controller.currentPoint.equals(controller.lastPoint))
 					{
-						// System.out.println("落子位置与起点位置相同！");
+						// log.info("落子位置与起点位置相同！");
 						// new MessageFrame("落子位置与起点位置相同！");
 						return;
 					}
@@ -230,47 +230,51 @@ public class ChessPanel extends JPanel
 						boolean isCheckedFlag = isChecked();
 						if (isCheckedFlag)
 						{
-							System.out.println("正在被将军，请应将！");
+							log.info("正在被将军，请应将！");
 							new MessageFrame("正在被将军，请应将！");
 							return;
 						}
 
 						// 当前位置有对方的棋子，则表示发生了吃子
-						boolean eatFlag = checkIfEat(
-								controller.pieceArray[(int) controller.currentPoint.getY()][(int) controller.currentPoint.getX()]);
+						boolean eatFlag = checkIfEat(controller.pieceArray[(int) controller.currentPoint
+								.getY()][(int) controller.currentPoint.getX()]);
 						if (eatFlag)
 						{
 							if (controller.redMove)
 							{
-								ChessAudio.MAN_EAT.play();
+								ChessAudio.play(ChessAudio.MAN_EAT);
 							}
 							else
 							{
-								ChessAudio.COM_EAT.play();
+								ChessAudio.play(ChessAudio.COM_EAT);
 							}
 						}
 						else
 						{
-							ChessAudio.MAN_MOVE.play();
+							ChessAudio.play(ChessAudio.MAN_MOVE);
 						}
 						// 上一次点击的棋子，移动到当前位置
-						controller.pieceArray[(int) controller.currentPoint.getY()][(int) controller.currentPoint.getX()] = controller.pieceArray[(int) controller.lastPoint.getY()][(int) controller.lastPoint.getX()];
+						controller.pieceArray[(int) controller.currentPoint.getY()][(int) controller.currentPoint
+								.getX()] = controller.pieceArray[(int) controller.lastPoint
+										.getY()][(int) controller.lastPoint.getX()];
 						// 再把上一个位置的棋子置为空
-						controller.pieceArray[(int) controller.lastPoint.getY()][(int) controller.lastPoint.getX()] = "";
+						controller.pieceArray[(int) controller.lastPoint.getY()][(int) controller.lastPoint
+								.getX()] = "";
 						controller.moveIndicitorList.clear();
 						blackIndicitorList.clear();
 						loadPieces();
 						repaint();
-						System.out.println("【红方落子】：lastPoint=(" + (int) controller.lastPoint.getY() + ","
+						log.info("【红方落子】：lastPoint=(" + (int) controller.lastPoint.getY() + ","
 								+ (int) controller.lastPoint.getX() + ")" + "--->" + "currentPoint=("
 								+ (int) controller.currentPoint.getY() + "," + (int) controller.currentPoint.getX()
 								+ ")，是否吃子=" + eatFlag + "，是否被将军=" + isCheckedFlag + "，轮到黑方下棋了！");
 
 						// 记录棋谱
 						Record record = new Record();
-						String chessName = controller.getChineseChess(
-								controller.pieceArray[(int) controller.currentPoint.getY()][(int) controller.currentPoint.getX()]);
-						// System.out.println("chessName=" + chessName + ",redMove=" + controller.redMove);
+						String chessName = controller
+								.getChineseChess(controller.pieceArray[(int) controller.currentPoint
+										.getY()][(int) controller.currentPoint.getX()]);
+						// log.info("chessName=" + chessName + ",redMove=" + controller.redMove);
 						record.setChessName(chessName);
 						record.setRedMove(controller.redMove);
 						Step step = new Step(new ChessPoint(controller.lastPoint),
@@ -299,12 +303,12 @@ public class ChessPanel extends JPanel
 							}
 						}).start();
 						showSteps();
-						// System.out.println("redMove=" + controller.redMove);
+						// log.info("redMove=" + controller.redMove);
 					}
-					else
-					{
-						ChessAudio.MAN_MOV_ERROR.play();
-					}
+					// else
+					// {
+					// ChessAudio.play(ChessAudio.MAN_MOV_ERROR);
+					// }
 					// 检查长拦和长捉
 					// 判断是否会被将军
 				}
@@ -453,7 +457,7 @@ public class ChessPanel extends JPanel
 					}
 				}
 			}
-			// System.out.println();
+			// log.info();
 		}
 		imgSelected = getImage(getCodeBase(), "pieces/" + controller.PIECES_NAME[pieces] + "/oos.gif");
 		imgSelected2 = getImage(getCodeBase(), "pieces/" + controller.PIECES_NAME[pieces] + "/oos2.jpg");
@@ -461,7 +465,10 @@ public class ChessPanel extends JPanel
 
 	private String getCodeBase()
 	{
-		String filePath = this.getClass().getClassLoader().getResource("").getFile();
+		String filePath = this.getClass()
+				.getClassLoader()
+				.getResource("")
+				.getFile();
 		return filePath;
 	}
 
@@ -526,8 +533,14 @@ public class ChessPanel extends JPanel
 			Record lastRecord = stepList.get(stepList.size() - 1);
 			Step lastStep = lastRecord.getChessStep();
 			List<ChessPoint> list = new ArrayList<>();
-			list.add(new ChessPoint(lastStep.getFrom().getX() + 2, lastStep.getFrom().getY() + 2));
-			list.add(new ChessPoint(lastStep.getTo().getX() + 2, lastStep.getTo().getY() + 2));
+			list.add(new ChessPoint(lastStep.getFrom()
+					.getX() + 2,
+					lastStep.getFrom()
+							.getY() + 2));
+			list.add(new ChessPoint(lastStep.getTo()
+					.getX() + 2,
+					lastStep.getTo()
+							.getY() + 2));
 			getDirectionLine(list, ChessConstant.GRID_WIDTH, ChessConstant.GRID_WIDTH, g2);
 		}
 		// 绘制棋子图片,10行9列
@@ -536,7 +549,7 @@ public class ChessPanel extends JPanel
 			for (int x = 0; x < 9; x++)
 			{
 				// 将点击的位置与棋子对应起来
-				// System.out.println("pieceImageArray[x][y]=" + pieceImageArray[x][y]);
+				// log.info("pieceImageArray[x][y]=" + pieceImageArray[x][y]);
 				if (controller.pieceArray[y][x].length() > 0 && !controller.pieceArray[y][x].equals("oos.gif"))
 				{
 					g2.drawImage(controller.pieceImageArray[y][x],
@@ -571,17 +584,15 @@ public class ChessPanel extends JPanel
 		{
 			Record lastRecord = stepList.get(stepList.size() - 1);
 			Step lastStep = lastRecord.getChessStep();
-			g2.drawImage(imgSelected2,
-					ChessConstant.CHESSBOARD_MARGIN + lastStep.getFrom().getX() * ChessConstant.GRID_WIDTH
-							- ChessConstant.GRID_WIDTH / 2,
-					ChessConstant.CHESSBOARD_MARGIN + lastStep.getFrom().getY() * ChessConstant.GRID_WIDTH
-							- ChessConstant.GRID_WIDTH / 2,
+			g2.drawImage(imgSelected2, ChessConstant.CHESSBOARD_MARGIN + lastStep.getFrom()
+					.getX() * ChessConstant.GRID_WIDTH - ChessConstant.GRID_WIDTH / 2,
+					ChessConstant.CHESSBOARD_MARGIN + lastStep.getFrom()
+							.getY() * ChessConstant.GRID_WIDTH - ChessConstant.GRID_WIDTH / 2,
 					this);
-			g2.drawImage(imgSelected2,
-					ChessConstant.CHESSBOARD_MARGIN + lastStep.getTo().getX() * ChessConstant.GRID_WIDTH
-							- ChessConstant.GRID_WIDTH / 2,
-					ChessConstant.CHESSBOARD_MARGIN + lastStep.getTo().getY() * ChessConstant.GRID_WIDTH
-							- ChessConstant.GRID_WIDTH / 2,
+			g2.drawImage(imgSelected2, ChessConstant.CHESSBOARD_MARGIN + lastStep.getTo()
+					.getX() * ChessConstant.GRID_WIDTH - ChessConstant.GRID_WIDTH / 2,
+					ChessConstant.CHESSBOARD_MARGIN + lastStep.getTo()
+							.getY() * ChessConstant.GRID_WIDTH - ChessConstant.GRID_WIDTH / 2,
 					this);
 		}
 
@@ -848,7 +859,7 @@ public class ChessPanel extends JPanel
 	{
 		// 找出黑方的最佳走法
 		String bestMove = findBestMove(controller.pieceArray);
-		System.out.println("引擎返回的最佳下法为：" + bestMove + ", controller.redMove=" + controller.redMove);
+		log.info("引擎返回的最佳下法为：" + bestMove + ", controller.redMove=" + controller.redMove);
 		if (bestMove == null)
 		{
 			new MessageFrame("棋局已结束！");
@@ -860,7 +871,7 @@ public class ChessPanel extends JPanel
 			String startPoint = bestMove.substring(0, 2);
 			int lastY = (9 - Integer.valueOf(startPoint.substring(1, startPoint.length())));
 			int lastX = controller.findIndexOf(startPoint.substring(0, 1), ChessController.iccsHorizontalNumbers);
-			// System.out.println("lastY=" + lastY + ",lastX=" + lastX);
+			// log.info("lastY=" + lastY + ",lastX=" + lastX);
 
 			String endPoint = bestMove.substring(2, 4);
 			int currentY = (9 - Integer.valueOf(endPoint.substring(1, endPoint.length())));
@@ -872,24 +883,24 @@ public class ChessPanel extends JPanel
 			{
 				if (controller.redMove)
 				{
-					ChessAudio.MAN_EAT.play();
+					ChessAudio.play(ChessAudio.MAN_EAT);
 				}
 				else
 				{
 					if (controller.pieceArray[currentY][currentX].equals("rk.gif"))
 					{
 						new MessageFrame("你输了！");
-						ChessAudio.BE_CHECKMATED_BY_COM.play();
+						ChessAudio.play(ChessAudio.BE_CHECKMATED_BY_COM);
 					}
 					else
 					{
-						ChessAudio.COM_EAT.play();
+						ChessAudio.play(ChessAudio.COM_EAT);
 					}
 				}
 			}
 			else
 			{
-				ChessAudio.MAN_MOVE.play();
+				ChessAudio.play(ChessAudio.MAN_MOVE);
 			}
 
 			// 根据引擎返回的信息，更新棋盘
@@ -899,7 +910,7 @@ public class ChessPanel extends JPanel
 			controller.pieceArray[lastY][lastX] = "";
 
 			controller.currentPoint.setLocation(currentX, currentY);
-			// System.out.println("controller.lastPoint=(" + (int) controller.lastPoint.getX() + "," + (int)
+			// log.info("controller.lastPoint=(" + (int) controller.lastPoint.getX() + "," + (int)
 			// controller.lastPoint.getY() +
 			// ")"
 			// + ", controller.currentPoint=(" + (int) controller.currentPoint.getX() + "," + (int)
@@ -907,19 +918,19 @@ public class ChessPanel extends JPanel
 			// + ")");
 			loadPieces();
 			repaint();
-			System.out.println("【黑方落子】：lastPoint=(" + lastY + "," + lastX + ")" + "--->" + "currentPoint=(" + currentY
-					+ "," + currentX + ")，是否吃子=" + eatFlag + "，是否将军=" + isChecked() + "，轮到红方下棋了！");
+			log.info("【黑方落子】：lastPoint=(" + lastY + "," + lastX + ")" + "--->" + "currentPoint=(" + currentY + ","
+					+ currentX + ")，是否吃子=" + eatFlag + "，是否将军=" + isChecked() + "，轮到红方下棋了！");
 
 			if (isChecked())
 			{
 				new MessageFrame("将军！");
-				ChessAudio.COM_CHECK.play();
+				ChessAudio.play(ChessAudio.COM_CHECK);
 			}
 
 			// 记录棋谱
 			Record record = new Record();
 			String chessName = controller.getChineseChess(controller.pieceArray[currentY][currentX]);
-			// System.out.println("chessName=" + chessName + ",redMove=" + controller.redMove);
+			// log.info("chessName=" + chessName + ",redMove=" + controller.redMove);
 			record.setChessName(chessName);
 			record.setRedMove(controller.redMove);
 			Step step = new Step(new ChessPoint(lastX, lastY), new ChessPoint(currentX, currentY));
@@ -934,7 +945,7 @@ public class ChessPanel extends JPanel
 		}
 		else
 		{
-			System.out.println("现在是红方走棋！");
+			log.info("现在是红方走棋！");
 		}
 	}
 
@@ -964,7 +975,8 @@ public class ChessPanel extends JPanel
 			{
 				String moveString = ChessController.chessMap.get((9 - from.getY()) + "_" + from.getX())
 						+ ChessController.chessMap.get((9 - to.getY()) + "_" + to.getX());
-				moveList.append(moveString).append(" ");
+				moveList.append(moveString)
+						.append(" ");
 				moveList.append("");
 				n++;
 			}
@@ -980,7 +992,7 @@ public class ChessPanel extends JPanel
 			moveFen = "position fen " + controller.toFen(controller.pieceArray) + " - - " + noEatMoves + " " + n + " "
 					+ movesString;
 		}
-		System.out.println("\n>>>" + moveFen);
+		log.info("\n>>>" + moveFen);
 		String bestMove = null;
 		try
 		{
@@ -988,19 +1000,20 @@ public class ChessPanel extends JPanel
 		}
 		catch (IOException e)
 		{
-			System.out.println("获取引擎走法出错：" + e.getMessage());
+			log.info("获取引擎走法出错：" + e.getMessage());
 			e.printStackTrace();
 		}
-		// System.out.println("获取引擎走法成功，bestMove=" + bestMove);
+		// log.info("获取引擎走法成功，bestMove=" + bestMove);
 		engineTextArea.setText(Utils.readFromFile() + "\n");
-		engineTextArea.setCaretPosition(engineTextArea.getText().length());
+		engineTextArea.setCaretPosition(engineTextArea.getText()
+				.length());
 		return bestMove;
 	}
 
 	protected void showSteps()
 	{
-		System.out.println("┏------------------------------开始--------------------------------------┓");
-		System.out.println("当前棋局步骤为：");
+		log.info("┏------------------------------开始--------------------------------------┓");
+		log.info("当前棋局步骤为：");
 		// 输出坐标变化
 		for (int i = 0; i < stepList.size(); i++)
 		{
@@ -1121,8 +1134,9 @@ public class ChessPanel extends JPanel
 				recordString.append("\n");
 			}
 		}
-		System.out.println("\n┗-------------------------------结束-------------------------------------┛\n\n");
+		log.info("\n┗-------------------------------结束-------------------------------------┛\n\n");
 		stepTextArea.setText(recordString.toString());
-		stepTextArea.setCaretPosition(stepTextArea.getText().length());
+		stepTextArea.setCaretPosition(stepTextArea.getText()
+				.length());
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ChessPoint implements Comparable
+public class ChessPoint implements Comparable<ChessPoint>
 {
 	/**
 	 * 鼠标点击的x坐标
@@ -88,7 +88,7 @@ public class ChessPoint implements Comparable
 	}
 
 	@Override
-	public int compareTo(Object o)
+	public int compareTo(ChessPoint o)
 	{
 		ChessPoint s = (ChessPoint) o;
 		if (this.x > s.x)

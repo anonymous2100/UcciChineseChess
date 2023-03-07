@@ -115,7 +115,8 @@ public class Application
 
 				ChessPanel chessPanel = new ChessPanel();
 				chessPanel.setUseIccs(true);
-				frame.getContentPane().add(chessPanel, BorderLayout.CENTER);
+				frame.getContentPane()
+						.add(chessPanel, BorderLayout.CENTER);
 
 				// 创建菜单栏
 				JMenuBar menuBar = new JMenuBar();
@@ -168,7 +169,8 @@ public class Application
 				helpMenu.add(aboutItem);
 				menuBar.add(helpMenu);
 				// 设置布局管理器，把菜单栏添加到框架北部
-				frame.getContentPane().add(menuBar, BorderLayout.NORTH);
+				frame.getContentPane()
+						.add(menuBar, BorderLayout.NORTH);
 
 				addWindowClickOperation(frame);
 			}
@@ -184,7 +186,7 @@ public class Application
 			bw.newLine();
 			bw.flush();
 			// System.out.println("初始化引擎...");
-			ChessAudio.OPEN_BOARD.play();
+			ChessAudio.play(ChessAudio.OPEN_BOARD);
 		}
 		catch (IOException e)
 		{
