@@ -194,7 +194,7 @@ public class ChessPanel extends JPanel
 						/ ChessConstant.GRID_WIDTH);
 				int x = Math.round(1.0f * (e.getX() - ChessConstant.CHESSBOARD_MARGIN - ChessConstant.X_INIT)
 						/ ChessConstant.GRID_WIDTH);
-				// log.info("e.getY()=" + e.getY() + ",e.getX()=" + e.getX() + "，y=" + y + ",x=" + x);
+				log.info("e.getY()=" + e.getY() + ",e.getX()=" + e.getX() + "，y=" + y + ",x=" + x);
 				// 处理鼠标点击棋盘上交叉点的点击事件
 				if ((y >= 0 && y <= 9) && (x >= 0 && x <= 8))
 				{
@@ -207,18 +207,17 @@ public class ChessPanel extends JPanel
 						repaint();
 					}
 					controller.currentPoint.setLocation(x, y);
-					// log.info("controller.lastPoint=(" + (int) controller.lastPoint.getX() + "," + (int)
-					// controller.lastPoint.getY()
-					// + ")" + ", controller.currentPoint=(" + (int) controller.currentPoint.getX() + ","
-					// + (int) controller.currentPoint.getY() + ")");
+					log.info("controller.lastPoint=(" + (int) controller.lastPoint.getX() + ","
+							+ (int) controller.lastPoint.getY() + ")" + ", controller.currentPoint=("
+							+ (int) controller.currentPoint.getX() + "," + (int) controller.currentPoint.getY() + ")");
 					if (controller.hasWinner(controller.pieceArray))
 					{
-						log.info("棋局已结束！");
+						log.warn("棋局已结束！");
 						return;
 					}
 					if (controller.currentPoint.equals(controller.lastPoint))
 					{
-						// log.info("落子位置与起点位置相同！");
+						log.warn("落子位置与起点位置相同！");
 						// new MessageFrame("落子位置与起点位置相同！");
 						return;
 					}
@@ -307,6 +306,7 @@ public class ChessPanel extends JPanel
 					}
 					// else
 					// {
+					// new MessageFrame("不允许落子！");
 					// ChessAudio.play(ChessAudio.MAN_MOV_ERROR);
 					// }
 					// 检查长拦和长捉
@@ -339,41 +339,41 @@ public class ChessPanel extends JPanel
 			}
 		}
 		// 遍历黑方各个棋子的可移动路线，取合集，判断是否包含红方帅的位置
-		// List<String> blackList = new ArrayList<>();
-		// List<ChessPoint> allList = new ArrayList<>();
-		// for (int y = 0; y < 10; y++)
-		// {
-		// for (int x = 0; x < 9; x++)
-		// {
-		// String chessValue = controller.pieceArray[y][x];
-		// if (chessValue.startsWith("b"))
-		// {
-		// blackList.add(chessValue);
-		// List<ChessPoint> singleIndicitorList = new ArrayList<>();
-		// for (int yy = 0; yy < 10; yy++)
-		// {
-		// for (int xx = 0; xx < 9; xx++)
-		// {
-		// // log.info("i={},blackList[i]={}，x={},y={}", i, blackList.get(i), x, y);
-		// if (controller.checkWhetherCanMove(chessValue, new Point(x, y), new Point(xx, yy)))
-		// {
-		// singleIndicitorList.add(new ChessPoint(xx, yy));
-		// }
-		// }
-		// }
-		// log.info("【isChecked】chessValue={}, singleIndicitorList={}",
-		// controller.getChineseChess(chessValue), singleIndicitorList);
-		// allList.addAll(singleIndicitorList);
-		// }
-		// }
-		// }
-		// Set<ChessPoint> userSet = new HashSet<>(allList);
-		// blackIndicitorList = new ArrayList<>(userSet);
-		// if (blackIndicitorList.size() > 0
-		// && blackIndicitorList.contains(new ChessPoint(redKingPoint.getX(), redKingPoint.getY())))
-		// {
-		// return true;
-		// }
+		List<String> blackList = new ArrayList<>();
+		List<ChessPoint> allList = new ArrayList<>();
+		for (int y = 0; y < 10; y++)
+		{
+			for (int x = 0; x < 9; x++)
+			{
+				String chessValue = controller.pieceArray[y][x];
+				if (chessValue.startsWith("b"))
+				{
+					blackList.add(chessValue);
+					List<ChessPoint> singleIndicitorList = new ArrayList<>();
+					for (int yy = 0; yy < 10; yy++)
+					{
+						for (int xx = 0; xx < 9; xx++)
+						{
+							// log.info("i={},blackList[i]={}，x={},y={}", i, blackList.get(i), x, y);
+							if (controller.checkWhetherCanMove(chessValue, new Point(x, y), new Point(xx, yy)))
+							{
+								singleIndicitorList.add(new ChessPoint(xx, yy));
+							}
+						}
+					}
+					log.info("【isChecked】chessValue={}, singleIndicitorList={}", controller.getChineseChess(chessValue),
+							singleIndicitorList);
+					allList.addAll(singleIndicitorList);
+				}
+			}
+		}
+		Set<ChessPoint> userSet = new HashSet<>(allList);
+		blackIndicitorList = new ArrayList<>(userSet);
+		if (blackIndicitorList.size() > 0
+				&& blackIndicitorList.contains(new ChessPoint(redKingPoint.getX(), redKingPoint.getY())))
+		{
+			return true;
+		}
 		return false;
 	}
 
@@ -518,8 +518,8 @@ public class ChessPanel extends JPanel
 		// 画棋盘刻度线
 		if (isUseIccs())
 		{
-			// drawICCSNumbers(g2);
-			drawICoordinates(g2);
+			drawICCSNumbers(g2);
+			// drawICoordinates(g2);
 		}
 		else
 		{

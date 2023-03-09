@@ -22,7 +22,7 @@ public class ChessController
 	public static String[] iccsHorizontalNumbers = { "a", "b", "c", "d", "e", "f", "g", "h", "i" };
 	// iccs的纵坐标
 	public static String[] iccsVerticalNumbers = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-	
+
 	public String[] directionNumbers = { "进", "退", "平" };
 
 	// 初始棋子pieceArray[10][9]
@@ -217,13 +217,13 @@ public class ChessController
 				return false;
 			}
 			// 符合规则
-			if (checkRule(chessValue, startPoint, endPoint))
+			if (checkRule(pieceArray[lastY][lastX], startPoint, endPoint))
 			{
 				return true;
 			}
 			else
 			{
-				// System.out.println("走法不符合规则！");
+				// System.out.println("走法不符合" + getChineseChess(pieceArray[lastY][lastX]) + "规则！");
 				return false;
 			}
 		}
@@ -243,7 +243,7 @@ public class ChessController
 				return false;
 			}
 			// 符合规则
-			if (checkRule(chessValue, startPoint, endPoint))
+			if (checkRule(pieceArray[lastY][lastX], startPoint, endPoint))
 			{
 				// Step step = new Step(new ChessPoint(lastPoint), new ChessPoint(currentPoint));
 				// stepList.add(step);
@@ -252,7 +252,7 @@ public class ChessController
 			}
 			else
 			{
-				// System.out.println("走法不符合规则！");
+				// System.out.println("走法不符合" + getChineseChess(pieceArray[lastY][lastX]) + "规则！");
 				return false;
 			}
 		}
@@ -294,7 +294,8 @@ public class ChessController
 					}
 					else if (chessValue.startsWith("r"))
 					{
-						fen.append(chessValue.substring(1, 2).toUpperCase());
+						fen.append(chessValue.substring(1, 2)
+								.toUpperCase());
 					}
 					k = 0;
 				}
@@ -316,7 +317,7 @@ public class ChessController
 	}
 
 	/**
-	 * 判断能否走棋
+	 * 判断能否走棋 TODO bug修复
 	 */
 	public boolean checkRule(String chessValue, Point lastPoint, Point currentPoint)
 	{
@@ -672,7 +673,7 @@ public class ChessController
 		return true;
 	}
 
-	public   String getChineseChess(String chessValue)
+	public String getChineseChess(String chessValue)
 	{
 		// 车
 		if (chessValue.startsWith("rr") || chessValue.startsWith("br"))
